@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, BedDouble, Bath, Maximize, Building2, User, Mail, Phone, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { ArrowLeft, MapPin, BedDouble, Bath, Maximize, Building2, User, Mail, Phone, ChevronLeft, ChevronRight, Camera, Send, X, MessageCircle, CheckCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { formatINR } from '../utils/formatINR';
+import toast from 'react-hot-toast';
 import './PropertyDetail.css';
 
 const API_BASE = 'http://localhost:5000';
 
 const PropertyDetail = () => {
     const { id } = useParams();
+    const { user } = useAuth();
     const [property, setProperty] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState(0);
+    const [showInquiry, setShowInquiry] = useState(false);
+    const [inquirySent, setInquirySent] = useState(false);
+    const [sendingInquiry, setSendingInquiry] = useState(false);
+    const [inquiryForm, setInquiryForm] = useState({
+        name: '', email: '', phone: '', message: ''
+    });
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -26,6 +35,39 @@ const PropertyDetail = () => {
         };
         fetchProperty();
     }, [id]);
+
+    // Pre-fill form if logged in
+    useEffect(() => {
+        if (user && property) {
+            setInquiryForm(prev => ({
+                ...prev,
+                name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+                email: user.email || '',
+                phone: user.phone || '',
+                message: prev.message || `Hi, I'm interested in "${property.title}" listed at ${formatINR(property.price, property.type)}. Please share more details.`
+            }));
+        }
+    }, [user, property]);
+
+    const handleSendInquiry = async (e) => {
+        e.preventDefault();
+        setSendingInquiry(true);
+        try {
+            // Send via contact route
+            await api.post('/contact', {
+                name: inquiryForm.name,
+                email: inquiryForm.email,
+                subject: `Property Inquiry: ${property.title}`,
+                message: `${inquiryForm.message}\n\n---\nProperty: ${property.title}\nLocation: ${property.location.city}, ${property.location.state}\nPrice: ${formatINR(property.price, property.type)}\nPhone: ${inquiryForm.phone || 'Not provided'}`
+            });
+            setInquirySent(true);
+            toast.success('Inquiry sent to property owner!');
+        } catch (err) {
+            toast.error(err.response?.data?.errors?.[0]?.msg || 'Failed to send inquiry');
+        } finally {
+            setSendingInquiry(false);
+        }
+    };
 
     if (loading) return <div className="pd-page page"><div className="container"><div className="dash-loading">Loading property...</div></div></div>;
     if (!property) return <div className="pd-page page"><div className="container"><div className="mp-empty"><h3>Property not found</h3></div></div></div>;
@@ -134,11 +176,98 @@ const PropertyDetail = () => {
                                     {property.owner.phone && <p className="pd-contact-info"><Phone size={14} /> {property.owner.phone}</p>}
                                 </>
                             )}
-                            <Link to="/contact" className="btn btn-primary" style={{ width: '100%', marginTop: '16px' }}>Send Inquiry</Link>
+                            <button
+                                className="btn btn-primary"
+                                style={{ width: '100%', marginTop: '16px' }}
+                                onClick={() => setShowInquiry(true)}
+                            >
+                                <MessageCircle size={16} /> Send Inquiry
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* ===== Inquiry Modal ===== */}
+            {showInquiry && (
+                <div className="inquiry-overlay" onClick={() => setShowInquiry(false)}>
+                    <div className="inquiry-modal animate-scale-in" onClick={(e) => e.stopPropagation()}>
+                        <button className="inquiry-close" onClick={() => setShowInquiry(false)}>
+                            <X size={20} />
+                        </button>
+
+                        {inquirySent ? (
+                            <div className="inquiry-success">
+                                <div className="inquiry-success-icon"><CheckCircle size={48} /></div>
+                                <h3>Inquiry Sent! 🎉</h3>
+                                <p>Your message has been sent to the property owner. They'll get back to you soon.</p>
+                                <button className="btn btn-primary" onClick={() => { setShowInquiry(false); setInquirySent(false); }}>
+                                    Done
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="inquiry-header">
+                                    <MessageCircle size={20} className="inquiry-header-icon" />
+                                    <div>
+                                        <h3>Send Inquiry</h3>
+                                        <p>About: <strong>{property.title}</strong></p>
+                                    </div>
+                                </div>
+
+                                <form className="inquiry-form" onSubmit={handleSendInquiry}>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Your Name</label>
+                                            <input
+                                                className="form-input"
+                                                placeholder="Rahul Sharma"
+                                                value={inquiryForm.name}
+                                                onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Phone</label>
+                                            <input
+                                                className="form-input"
+                                                placeholder="+91 98765 43210"
+                                                value={inquiryForm.phone}
+                                                onChange={(e) => setInquiryForm({ ...inquiryForm, phone: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-input"
+                                            placeholder="rahul@example.com"
+                                            value={inquiryForm.email}
+                                            onChange={(e) => setInquiryForm({ ...inquiryForm, email: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Message</label>
+                                        <textarea
+                                            className="form-input"
+                                            rows={4}
+                                            placeholder="I'm interested in this property..."
+                                            value={inquiryForm.message}
+                                            onChange={(e) => setInquiryForm({ ...inquiryForm, message: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={sendingInquiry}>
+                                        <Send size={16} /> {sendingInquiry ? 'Sending...' : 'Send Inquiry'}
+                                    </button>
+                                </form>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

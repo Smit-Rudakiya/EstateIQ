@@ -290,3 +290,114 @@
         height: 280px;
     }
 }
+/* ===== Inquiry Modal ===== */
+.inquiry-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.inquiry-modal {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    padding: 36px;
+    width: 100%;
+    max-width: 520px;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.inquiry-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.inquiry-close:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.inquiry-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.inquiry-header-icon {
+    color: var(--primary);
+    margin-top: 2px;
+}
+
+.inquiry-header h3 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 4px;
+}
+
+.inquiry-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.inquiry-header p strong {
+    color: var(--primary-dark);
+}
+
+.inquiry-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.inquiry-success {
+    text-align: center;
+    padding: 24px 0;
+}
+
+.inquiry-success-icon {
+    color: var(--success);
+    margin-bottom: 16px;
+}
+
+.inquiry-success h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 8px;
+}
+
+.inquiry-success p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+    .inquiry-form .form-row {
+        grid-template-columns: 1fr;
+    }
+    .inquiry-modal {
+        padding: 24px;
+    }
+}
