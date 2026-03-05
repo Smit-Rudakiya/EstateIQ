@@ -31,8 +31,8 @@ const Login = () => {
             <div className="auth-container animate-fade-in">
                 <div className="auth-header">
                     <div className="auth-logo">Estate<span>IQ</span></div>
-                    <h1>Welcome Back</h1>
-                    <p>Log in to your account to continue</p>
+                    <h1>Welcome Back 👋</h1>
+                    <p>Sign in to access your properties and documents</p>
                 </div>
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">

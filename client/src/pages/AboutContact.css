@@ -19,6 +19,22 @@
     max-width: 800px;
     margin: 0 auto 48px;
     padding: 48px;
+    position: relative;
+}
+
+.about-mission-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: var(--radius-full);
+    background: var(--accent-bg);
+    color: var(--primary-dark);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
 }
 
 .about-mission h2 {
@@ -44,18 +60,51 @@
 .about-value-card {
     text-align: center;
     padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+}
+
+.about-value-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.about-value-card:hover::before {
+    opacity: 1;
 }
 
 .about-value-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    background: var(--accent-bg);
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent-bg) 0%, rgba(14, 165, 233, 0.15) 100%);
     color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
+}
+
+.about-value-icon-green {
+    background: linear-gradient(135deg, var(--success-bg) 0%, rgba(16, 185, 129, 0.15) 100%);
+    color: var(--success);
+}
+
+.about-value-icon-amber {
+    background: linear-gradient(135deg, var(--warning-bg) 0%, rgba(245, 158, 11, 0.15) 100%);
+    color: var(--warning);
+}
+
+.about-value-icon-purple {
+    background: linear-gradient(135deg, #EDE9FE 0%, rgba(124, 58, 237, 0.15) 100%);
+    color: #7C3AED;
 }
 
 .about-value-card h3 {
@@ -89,7 +138,6 @@
 .about-stat span {
     font-size: 40px;
     font-weight: 900;
-    color: var(--primary);
     display: block;
 }
 
@@ -163,6 +211,7 @@
         padding: 32px;
     }
 }
+
 /* ===== Google Maps ===== */
 .contact-map {
     margin-top: 48px;

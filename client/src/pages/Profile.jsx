@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Lock, Save, Mail, Phone } from 'lucide-react';
+import { User, Lock, Save, Mail, Phone, Shield } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './Profile.css';
@@ -52,27 +52,33 @@ const Profile = () => {
     return (
         <div className="profile-page page">
             <div className="container">
-                <div className="profile-header animate-fade-in">
-                    <div className="profile-avatar-lg">
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
-                    </div>
-                    <div>
-                        <h1>{user?.firstName} {user?.lastName}</h1>
-                        <p>@{user?.username} · {user?.role}</p>
+                {/* Profile Header Card */}
+                <div className="profile-hero animate-fade-in-up">
+                    <div className="profile-hero-bg" />
+                    <div className="profile-hero-content">
+                        <div className="profile-avatar-lg">
+                            {user?.firstName?.[0]}{user?.lastName?.[0]}
+                        </div>
+                        <div className="profile-hero-info">
+                            <h1>{user?.firstName} {user?.lastName}</h1>
+                            <p>@{user?.username}</p>
+                            <span className="badge badge-primary"><Shield size={10} /> {user?.role}</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className="profile-tabs">
-                    <button className={`mp-tab ${tab === 'details' ? 'active' : ''}`} onClick={() => setTab('details')}>
-                        <User size={16} /> User Details
+                <div className="profile-tabs animate-fade-in">
+                    <button className={`profile-tab ${tab === 'details' ? 'active' : ''}`} onClick={() => setTab('details')}>
+                        <User size={16} /> Personal Details
                     </button>
-                    <button className={`mp-tab ${tab === 'password' ? 'active' : ''}`} onClick={() => setTab('password')}>
+                    <button className={`profile-tab ${tab === 'password' ? 'active' : ''}`} onClick={() => setTab('password')}>
                         <Lock size={16} /> Change Password
                     </button>
                 </div>
 
                 {tab === 'details' ? (
-                    <form className="profile-form card animate-fade-in" onSubmit={handleUpdateProfile}>
+                    <form className="profile-form card animate-fade-in-up" onSubmit={handleUpdateProfile}>
+                        <h3>✏️ Edit Your Information</h3>
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">First Name</label>
@@ -89,14 +95,15 @@ const Profile = () => {
                         </div>
                         <div className="form-group">
                             <label className="form-label"><Phone size={14} /> Phone</label>
-                            <input className="form-input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 555-0100" />
+                            <input className="form-input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+91 98765 43210" />
                         </div>
                         <button type="submit" className="btn btn-primary" disabled={loading}>
                             <Save size={16} /> {loading ? 'Saving...' : 'Save Changes'}
                         </button>
                     </form>
                 ) : (
-                    <form className="profile-form card animate-fade-in" onSubmit={handleChangePassword}>
+                    <form className="profile-form card animate-fade-in-up" onSubmit={handleChangePassword}>
+                        <h3>🔒 Change Your Password</h3>
                         <div className="form-group">
                             <label className="form-label">Current Password</label>
                             <input type="password" className="form-input" placeholder="Enter current password" value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })} required />

@@ -62,8 +62,8 @@ const Marketplace = () => {
                 {/* Header */}
                 <div className="mp-header animate-fade-in">
                     <div className="section-label">Marketplace</div>
-                    <h1 className="section-title">Find Your Perfect Property</h1>
-                    <p className="section-subtitle">Browse through our curated collection of properties with smart search and filters.</p>
+                    <h1 className="section-title">Find Your <span className="gradient-text">Perfect Property</span></h1>
+                    <p className="section-subtitle">Explore premium properties across India — from luxury apartments to commercial spaces, all in one place.</p>
                 </div>
 
                 {/* Tabs */}

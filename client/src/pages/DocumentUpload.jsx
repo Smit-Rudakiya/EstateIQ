@@ -69,8 +69,8 @@ const DocumentUpload = () => {
             <div className="container">
                 <div className="upload-header animate-fade-in">
                     <div className="section-label">Documents</div>
-                    <h1 className="section-title">Upload Documents</h1>
-                    <p className="section-subtitle">Upload PDF or DOC/DOCX files for secure storage. Supports files up to 10MB.</p>
+                    <h1 className="section-title">Upload <span className="gradient-text">Documents</span></h1>
+                    <p className="section-subtitle">Securely upload your property contracts, agreements, and lease documents for AI-powered analysis.</p>
                 </div>
 
                 {/* Drop Zone */}

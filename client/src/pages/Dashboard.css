@@ -45,10 +45,28 @@
     align-items: center;
     gap: 16px;
     transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.dash-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.dash-stat-card:hover::before {
+    opacity: 1;
 }
 
 .dash-stat-card:hover {
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lg);
 }
 
 .dash-stat-icon {
