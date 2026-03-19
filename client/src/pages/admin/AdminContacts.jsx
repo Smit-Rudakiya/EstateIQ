@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Trash2, CheckCircle, ChevronLeft, ChevronRight, Eye, X, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import React from 'react';
 
 const AdminContacts = () => {
     const [contacts, setContacts] = useState([]);
@@ -10,8 +11,10 @@ const AdminContacts = () => {
     const [pages, setPages] = useState(1);
     const [statusFilter, setStatusFilter] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState([]);
     const [expandedId, setExpandedId] = useState(null);
     const [deleteModal, setDeleteModal] = useState(null);
+    const [isBulkDelete, setIsBulkDelete] = useState(false);
 
     useEffect(() => {
         fetchContacts();
@@ -53,14 +56,36 @@ const AdminContacts = () => {
     };
 
     const handleDelete = async () => {
-        if (!deleteModal) return;
+        if (!deleteModal && !isBulkDelete) return;
+
         try {
-            await api.delete(`/admin/contacts/${deleteModal._id}`);
-            toast.success('Contact deleted');
-            setDeleteModal(null);
+            if (isBulkDelete) {
+                await api.post('/admin/contacts/bulk-delete', { ids: selectedIds });
+                toast.success(`Deleted ${selectedIds.length} messages`);
+                setSelectedIds([]);
+                setIsBulkDelete(false);
+            } else {
+                await api.delete(`/admin/contacts/${deleteModal._id}`);
+                toast.success('Contact deleted');
+                setDeleteModal(null);
+            }
             fetchContacts();
         } catch (err) {
             toast.error('Failed to delete contact');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(contacts.map(c => c._id));
+        } else {
+            setSelectedIds([]);
         }
     };
 
@@ -98,6 +123,23 @@ const AdminContacts = () => {
                     </div>
                 </div>
 
+                {selectedIds.length > 0 && (
+                    <div className="bulk-actions-bar">
+                        <div className="bulk-info">
+                            <span className="bulk-count">{selectedIds.length}</span>
+                            <span>Messages selected</span>
+                        </div>
+                        <div className="bulk-btns">
+                            <button className="btn btn-danger btn-sm" onClick={() => setIsBulkDelete(true)}>
+                                <Trash2 size={16} /> Delete Selected
+                            </button>
+                            <button className="btn btn-outline btn-sm" onClick={() => setSelectedIds([])}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="admin-loading"><div className="admin-spinner"></div></div>
                 ) : contacts.length === 0 ? (
@@ -110,6 +152,14 @@ const AdminContacts = () => {
                         <table className="admin-table">
                             <thead>
                                 <tr>
+                                    <th className="checkbox-cell">
+                                        <input
+                                            type="checkbox"
+                                            className="custom-checkbox"
+                                            onChange={handleSelectAll}
+                                            checked={contacts.length > 0 && selectedIds.length === contacts.length}
+                                        />
+                                    </th>
                                     <th>From</th>
                                     <th>Subject</th>
                                     <th>Status</th>
@@ -119,8 +169,16 @@ const AdminContacts = () => {
                             </thead>
                             <tbody>
                                 {contacts.map((c) => (
-                                    <>
-                                        <tr key={c._id}>
+                                    <React.Fragment key={c._id}>
+                                        <tr className={selectedIds.includes(c._id) ? 'selected' : ''}>
+                                            <td className="checkbox-cell">
+                                                <input
+                                                    type="checkbox"
+                                                    className="custom-checkbox"
+                                                    checked={selectedIds.includes(c._id)}
+                                                    onChange={() => toggleSelect(c._id)}
+                                                />
+                                            </td>
                                             <td>
                                                 <div className="table-user">
                                                     <div className="table-user-avatar" style={{
@@ -175,8 +233,8 @@ const AdminContacts = () => {
                                             </td>
                                         </tr>
                                         {expandedId === c._id && (
-                                            <tr key={`${c._id}-detail`}>
-                                                <td colSpan={5}>
+                                            <tr className={selectedIds.includes(c._id) ? 'selected' : ''}>
+                                                <td colSpan={6}>
                                                     <div className="message-detail">
                                                         <p>{c.message}</p>
                                                         <div className="message-meta">
@@ -187,7 +245,7 @@ const AdminContacts = () => {
                                                 </td>
                                             </tr>
                                         )}
-                                    </>
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>
@@ -220,6 +278,20 @@ const AdminContacts = () => {
                         <div className="modal-actions">
                             <button className="btn btn-outline btn-sm" onClick={() => setDeleteModal(null)}>Cancel</button>
                             <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Delete Confirmation Modal */}
+            {isBulkDelete && (
+                <div className="modal-overlay" onClick={() => { setIsBulkDelete(false); setSelectedIds([]); }}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()}>
+                        <h3>⚠️ Bulk Delete Queries</h3>
+                        <p>Are you sure you want to delete <strong>{selectedIds.length}</strong> selected messages? This action cannot be undone.</p>
+                        <div className="modal-actions">
+                            <button className="btn btn-outline btn-sm" onClick={() => setIsBulkDelete(false)}>Cancel</button>
+                            <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete All</button>
                         </div>
                     </div>
                 </div>

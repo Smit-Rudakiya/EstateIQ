@@ -6,6 +6,7 @@ const Property = require('../models/Property');
 const Document = require('../models/Document');
 const ContactMessage = require('../models/ContactMessage');
 const AuditLog = require('../models/AuditLog');
+const { sendContactResolvedEmail } = require('../utils/mailService');
 
 // Helper to create audit log
 const logAction = async (adminId, action, targetType, targetId, details, metadata) => {
@@ -149,6 +150,25 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
     }
 });
 
+// @route   POST /api/admin/users/bulk-delete
+router.post('/users/bulk-delete', adminAuth, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) return res.status(400).json({ message: 'Invalid IDs' });
+
+        // Filter out self to prevent accidental suicide
+        const filteredIds = ids.filter(id => id !== req.user._id.toString());
+        
+        const result = await User.deleteMany({ _id: { $in: filteredIds } });
+        await logAction(req.user._id, 'bulk_users_deleted', 'user', null, 
+            `Bulk deleted ${result.deletedCount} users`);
+
+        res.json({ message: `Deleted ${result.deletedCount} users`, count: result.deletedCount });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 // ===================== PROPERTY MANAGEMENT =====================
 
 // @route   GET /api/admin/properties
@@ -217,6 +237,22 @@ router.delete('/properties/:id', adminAuth, async (req, res) => {
     }
 });
 
+// @route   POST /api/admin/properties/bulk-delete
+router.post('/properties/bulk-delete', adminAuth, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) return res.status(400).json({ message: 'Invalid IDs' });
+
+        const result = await Property.deleteMany({ _id: { $in: ids } });
+        await logAction(req.user._id, 'bulk_properties_deleted', 'property', null, 
+            `Bulk deleted ${result.deletedCount} properties`);
+
+        res.json({ message: `Deleted ${result.deletedCount} properties`, count: result.deletedCount });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 // ===================== CONTACT MANAGEMENT =====================
 
 // @route   GET /api/admin/contacts
@@ -251,7 +287,26 @@ router.put('/contacts/:id', adminAuth, async (req, res) => {
         await logAction(req.user._id, 'contact_resolved', 'contact', contact._id,
             `Resolved contact from ${contact.name} (${contact.email})`);
 
+        // Send email (non-blocking)
+        sendContactResolvedEmail(contact).catch(err => console.error('Email error:', err));
+
         res.json({ message: 'Contact updated', contact });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   POST /api/admin/contacts/bulk-delete
+router.post('/contacts/bulk-delete', adminAuth, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) return res.status(400).json({ message: 'Invalid IDs' });
+
+        const result = await ContactMessage.deleteMany({ _id: { $in: ids } });
+        await logAction(req.user._id, 'bulk_contacts_deleted', 'contact', null, 
+            `Bulk deleted ${result.deletedCount} contact messages`);
+
+        res.json({ message: `Deleted ${result.deletedCount} messages`, count: result.deletedCount });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -311,6 +366,22 @@ router.delete('/documents/:id', adminAuth, async (req, res) => {
 
         await Document.findByIdAndDelete(req.params.id);
         res.json({ message: 'Document deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   POST /api/admin/documents/bulk-delete
+router.post('/documents/bulk-delete', adminAuth, async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) return res.status(400).json({ message: 'Invalid IDs' });
+
+        const result = await Document.deleteMany({ _id: { $in: ids } });
+        await logAction(req.user._id, 'bulk_documents_deleted', 'document', null, 
+            `Bulk deleted ${result.deletedCount} documents`);
+
+        res.json({ message: `Deleted ${result.deletedCount} documents`, count: result.deletedCount });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }

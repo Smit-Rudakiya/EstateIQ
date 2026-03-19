@@ -11,7 +11,9 @@ const AdminProperties = () => {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState([]);
     const [deleteModal, setDeleteModal] = useState(null);
+    const [isBulkDelete, setIsBulkDelete] = useState(false);
 
     useEffect(() => {
         fetchProperties();
@@ -51,14 +53,36 @@ const AdminProperties = () => {
     };
 
     const handleDelete = async () => {
-        if (!deleteModal) return;
+        if (!deleteModal && !isBulkDelete) return;
+
         try {
-            await api.delete(`/admin/properties/${deleteModal._id}`);
-            toast.success('Property deleted');
-            setDeleteModal(null);
+            if (isBulkDelete) {
+                await api.post('/admin/properties/bulk-delete', { ids: selectedIds });
+                toast.success(`Deleted ${selectedIds.length} properties`);
+                setSelectedIds([]);
+                setIsBulkDelete(false);
+            } else {
+                await api.delete(`/admin/properties/${deleteModal._id}`);
+                toast.success('Property deleted');
+                setDeleteModal(null);
+            }
             fetchProperties();
         } catch (err) {
             toast.error('Failed to delete property');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(properties.map(p => p._id));
+        } else {
+            setSelectedIds([]);
         }
     };
 
@@ -113,6 +137,23 @@ const AdminProperties = () => {
                     </div>
                 </div>
 
+                {selectedIds.length > 0 && (
+                    <div className="bulk-actions-bar">
+                        <div className="bulk-info">
+                            <span className="bulk-count">{selectedIds.length}</span>
+                            <span>Properties selected</span>
+                        </div>
+                        <div className="bulk-btns">
+                            <button className="btn btn-danger btn-sm" onClick={() => setIsBulkDelete(true)}>
+                                <Trash2 size={16} /> Delete Selected
+                            </button>
+                            <button className="btn btn-outline btn-sm" onClick={() => setSelectedIds([])}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="admin-loading"><div className="admin-spinner"></div></div>
                 ) : properties.length === 0 ? (
@@ -125,6 +166,14 @@ const AdminProperties = () => {
                         <table className="admin-table">
                             <thead>
                                 <tr>
+                                    <th className="checkbox-cell">
+                                        <input
+                                            type="checkbox"
+                                            className="custom-checkbox"
+                                            onChange={handleSelectAll}
+                                            checked={properties.length > 0 && selectedIds.length === properties.length}
+                                        />
+                                    </th>
                                     <th>Property</th>
                                     <th>Type</th>
                                     <th>Price</th>
@@ -136,7 +185,15 @@ const AdminProperties = () => {
                             </thead>
                             <tbody>
                                 {properties.map((p) => (
-                                    <tr key={p._id}>
+                                    <tr key={p._id} className={selectedIds.includes(p._id) ? 'selected' : ''}>
+                                        <td className="checkbox-cell">
+                                            <input
+                                                type="checkbox"
+                                                className="custom-checkbox"
+                                                checked={selectedIds.includes(p._id)}
+                                                onChange={() => toggleSelect(p._id)}
+                                            />
+                                        </td>
                                         <td>
                                             <div className="table-user">
                                                 {p.images?.[0] ? (
@@ -230,6 +287,20 @@ const AdminProperties = () => {
                         <div className="modal-actions">
                             <button className="btn btn-outline btn-sm" onClick={() => setDeleteModal(null)}>Cancel</button>
                             <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete Property</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Delete Confirmation Modal */}
+            {isBulkDelete && (
+                <div className="modal-overlay" onClick={() => { setIsBulkDelete(false); setSelectedIds([]); }}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()}>
+                        <h3>⚠️ Bulk Delete Properties</h3>
+                        <p>Are you sure you want to delete <strong>{selectedIds.length}</strong> selected properties? This action cannot be undone.</p>
+                        <div className="modal-actions">
+                            <button className="btn btn-outline btn-sm" onClick={() => setIsBulkDelete(false)}>Cancel</button>
+                            <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete All</button>
                         </div>
                     </div>
                 </div>

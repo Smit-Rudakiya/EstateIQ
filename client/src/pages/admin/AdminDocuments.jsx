@@ -9,7 +9,9 @@ const AdminDocuments = () => {
     const [page, setPage] = useState(1);
     const [pages, setPages] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState([]);
     const [deleteModal, setDeleteModal] = useState(null);
+    const [isBulkDelete, setIsBulkDelete] = useState(false);
 
     useEffect(() => {
         fetchDocuments();
@@ -30,14 +32,36 @@ const AdminDocuments = () => {
     };
 
     const handleDelete = async () => {
-        if (!deleteModal) return;
+        if (!deleteModal && !isBulkDelete) return;
+
         try {
-            await api.delete(`/admin/documents/${deleteModal._id}`);
-            toast.success('Document deleted');
-            setDeleteModal(null);
+            if (isBulkDelete) {
+                await api.post('/admin/documents/bulk-delete', { ids: selectedIds });
+                toast.success(`Deleted ${selectedIds.length} documents`);
+                setSelectedIds([]);
+                setIsBulkDelete(false);
+            } else {
+                await api.delete(`/admin/documents/${deleteModal._id}`);
+                toast.success('Document deleted');
+                setDeleteModal(null);
+            }
             fetchDocuments();
         } catch (err) {
             toast.error('Failed to delete document');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(documents.map(d => d._id));
+        } else {
+            setSelectedIds([]);
         }
     };
 
@@ -75,6 +99,23 @@ const AdminDocuments = () => {
                     <h3>{total} Documents</h3>
                 </div>
 
+                {selectedIds.length > 0 && (
+                    <div className="bulk-actions-bar">
+                        <div className="bulk-info">
+                            <span className="bulk-count">{selectedIds.length}</span>
+                            <span>Documents selected</span>
+                        </div>
+                        <div className="bulk-btns">
+                            <button className="btn btn-danger btn-sm" onClick={() => setIsBulkDelete(true)}>
+                                <Trash2 size={16} /> Delete Selected
+                            </button>
+                            <button className="btn btn-outline btn-sm" onClick={() => setSelectedIds([])}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="admin-loading"><div className="admin-spinner"></div></div>
                 ) : documents.length === 0 ? (
@@ -87,6 +128,14 @@ const AdminDocuments = () => {
                         <table className="admin-table">
                             <thead>
                                 <tr>
+                                    <th className="checkbox-cell">
+                                        <input
+                                            type="checkbox"
+                                            className="custom-checkbox"
+                                            onChange={handleSelectAll}
+                                            checked={documents.length > 0 && selectedIds.length === documents.length}
+                                        />
+                                    </th>
                                     <th>Document</th>
                                     <th>Uploaded By</th>
                                     <th>Property</th>
@@ -98,7 +147,15 @@ const AdminDocuments = () => {
                             </thead>
                             <tbody>
                                 {documents.map((d) => (
-                                    <tr key={d._id}>
+                                    <tr key={d._id} className={selectedIds.includes(d._id) ? 'selected' : ''}>
+                                        <td className="checkbox-cell">
+                                            <input
+                                                type="checkbox"
+                                                className="custom-checkbox"
+                                                checked={selectedIds.includes(d._id)}
+                                                onChange={() => toggleSelect(d._id)}
+                                            />
+                                        </td>
                                         <td>
                                             <div className="table-user">
                                                 <div className="table-user-avatar" style={{ background: getFileColor(d.fileType) }}>
@@ -177,6 +234,20 @@ const AdminDocuments = () => {
                         <div className="modal-actions">
                             <button className="btn btn-outline btn-sm" onClick={() => setDeleteModal(null)}>Cancel</button>
                             <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete Document</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Delete Confirmation Modal */}
+            {isBulkDelete && (
+                <div className="modal-overlay" onClick={() => { setIsBulkDelete(false); setSelectedIds([]); }}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()}>
+                        <h3>⚠️ Bulk Delete Documents</h3>
+                        <p>Are you sure you want to delete <strong>{selectedIds.length}</strong> selected documents? The files will be permanently removed.</p>
+                        <div className="modal-actions">
+                            <button className="btn btn-outline btn-sm" onClick={() => setIsBulkDelete(false)}>Cancel</button>
+                            <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete All</button>
                         </div>
                     </div>
                 </div>

@@ -11,7 +11,9 @@ const AdminUsers = () => {
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
     const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState([]);
     const [deleteModal, setDeleteModal] = useState(null);
+    const [isBulkDelete, setIsBulkDelete] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -51,14 +53,36 @@ const AdminUsers = () => {
     };
 
     const handleDelete = async () => {
-        if (!deleteModal) return;
+        if (!deleteModal && !isBulkDelete) return;
+
         try {
-            await api.delete(`/admin/users/${deleteModal._id}`);
-            toast.success('User deleted');
-            setDeleteModal(null);
+            if (isBulkDelete) {
+                await api.post('/admin/users/bulk-delete', { ids: selectedIds });
+                toast.success(`Deleted ${selectedIds.length} users`);
+                setSelectedIds([]);
+                setIsBulkDelete(false);
+            } else {
+                await api.delete(`/admin/users/${deleteModal._id}`);
+                toast.success('User deleted');
+                setDeleteModal(null);
+            }
             fetchUsers();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to delete user');
+            toast.error(err.response?.data?.message || 'Failed to delete user(s)');
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(users.map(u => u._id));
+        } else {
+            setSelectedIds([]);
         }
     };
 
@@ -98,6 +122,23 @@ const AdminUsers = () => {
                     </div>
                 </div>
 
+                {selectedIds.length > 0 && (
+                    <div className="bulk-actions-bar">
+                        <div className="bulk-info">
+                            <span className="bulk-count">{selectedIds.length}</span>
+                            <span>Users selected</span>
+                        </div>
+                        <div className="bulk-btns">
+                            <button className="btn btn-danger btn-sm" onClick={() => setIsBulkDelete(true)}>
+                                <Trash2 size={16} /> Delete Selected
+                            </button>
+                            <button className="btn btn-outline btn-sm" onClick={() => setSelectedIds([])}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {loading ? (
                     <div className="admin-loading"><div className="admin-spinner"></div></div>
                 ) : users.length === 0 ? (
@@ -110,6 +151,14 @@ const AdminUsers = () => {
                         <table className="admin-table">
                             <thead>
                                 <tr>
+                                    <th className="checkbox-cell">
+                                        <input
+                                            type="checkbox"
+                                            className="custom-checkbox"
+                                            onChange={handleSelectAll}
+                                            checked={users.length > 0 && selectedIds.length === users.length}
+                                        />
+                                    </th>
                                     <th>User</th>
                                     <th>Username</th>
                                     <th>Phone</th>
@@ -120,7 +169,15 @@ const AdminUsers = () => {
                             </thead>
                             <tbody>
                                 {users.map((u) => (
-                                    <tr key={u._id}>
+                                    <tr key={u._id} className={selectedIds.includes(u._id) ? 'selected' : ''}>
+                                        <td className="checkbox-cell">
+                                            <input
+                                                type="checkbox"
+                                                className="custom-checkbox"
+                                                checked={selectedIds.includes(u._id)}
+                                                onChange={() => toggleSelect(u._id)}
+                                            />
+                                        </td>
                                         <td>
                                             <div className="table-user">
                                                 <div className="table-user-avatar">
@@ -211,6 +268,23 @@ const AdminUsers = () => {
                         <div className="modal-actions">
                             <button className="btn btn-outline btn-sm" onClick={() => setDeleteModal(null)}>Cancel</button>
                             <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete User</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Delete Confirmation Modal */}
+            {isBulkDelete && (
+                <div className="modal-overlay" onClick={() => { setIsBulkDelete(false); setSelectedIds([]); }}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()}>
+                        <h3>⚠️ Bulk Delete Users</h3>
+                        <p>
+                            Are you sure you want to delete <strong>{selectedIds.length}</strong> selected users?
+                            This action cannot be undone.
+                        </p>
+                        <div className="modal-actions">
+                            <button className="btn btn-outline btn-sm" onClick={() => setIsBulkDelete(false)}>Cancel</button>
+                            <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete All</button>
                         </div>
                     </div>
                 </div>

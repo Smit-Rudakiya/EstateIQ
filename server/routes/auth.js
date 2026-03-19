@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { sendResetEmail, sendWelcomeEmail } = require('../utils/mailService');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -44,6 +45,9 @@ router.post('/register', [
         }
 
         const user = await User.create({ firstName, lastName, username, email, password, phone });
+
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail(user).catch(err => console.error('Welcome email failed:', err));
 
         res.status(201).json({
             _id: user._id,
@@ -114,6 +118,9 @@ router.post('/forgot-password', [
         }
 
         // In production, send reset email. For demo, just confirm.
+        const resetLink = `http://localhost:5173/reset-password?token=${generateToken(user._id)}`;
+        sendResetEmail(user.email, resetLink).catch(err => console.error('Reset email failed:', err));
+
         res.json({ message: 'Password reset link has been sent to your email' });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
