@@ -16,6 +16,11 @@ const Register = () => {
         countryCode: '+91', phone: '', password: '', confirmPassword: ''
     });
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+    };
+
     const validateForm = () => {
         const errors = [];
         const { firstName, lastName, username, email, phone, password } = form;
@@ -24,7 +29,7 @@ const Register = () => {
         if (lastName.trim().length < 2) errors.push('Last name must be at least 2 characters');
         if (!/^[a-zA-Z0-9]{3,}$/.test(username)) errors.push('Username must be at least 3 alphanumeric characters');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Please enter a valid email address');
-        if (phone && !/^[6-9]\d{9}$/.test(phone)) errors.push('Please enter a valid 10-digit Indian phone number');
+        if (phone && !/^\d{10}$/.test(phone)) errors.push('Please enter a valid 10-digit phone number');
 
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
         if (!passwordRegex.test(password)) {

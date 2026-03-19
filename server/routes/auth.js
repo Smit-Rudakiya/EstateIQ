@@ -26,7 +26,7 @@ router.post('/register', [
     body('phone')
         .optional({ checkFalsy: true })
         .trim()
-        .matches(/^[6-9]\d{9}$/).withMessage('Please provide a valid 10-digit Indian phone number (starting with 6-9)')
+        .matches(/^\d{10}$/).withMessage('Please provide a valid 10-digit phone number')
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
