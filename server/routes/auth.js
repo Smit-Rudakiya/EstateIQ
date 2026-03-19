@@ -12,12 +12,20 @@ const generateToken = (id) => {
 
 // @route   POST /api/auth/register
 router.post('/register', [
-    body('firstName').trim().notEmpty().withMessage('First name is required'),
-    body('lastName').trim().notEmpty().withMessage('Last name is required'),
-    body('username').trim().notEmpty().withMessage('Username is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('phone').optional().trim()
+    body('firstName').trim().isLength({ min: 2 }).withMessage('First name must be at least 2 characters'),
+    body('lastName').trim().isLength({ min: 2 }).withMessage('Last name must be at least 2 characters'),
+    body('username').trim().isAlphanumeric().withMessage('Username must be alphanumeric').isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+    body('email').isEmail().withMessage('Please provide a valid email address'),
+    body('password')
+        .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+        .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+        .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+        .matches(/[0-9]/).withMessage('Password must contain at least one number')
+        .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Password must contain at least one special character'),
+    body('phone')
+        .optional({ checkFalsy: true })
+        .trim()
+        .matches(/^[6-9]\d{9}$/).withMessage('Please provide a valid 10-digit Indian phone number (starting with 6-9)')
 ], async (req, res) => {
     try {
         const errors = validationResult(req);

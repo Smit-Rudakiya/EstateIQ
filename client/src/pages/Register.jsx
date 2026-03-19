@@ -16,13 +16,32 @@ const Register = () => {
         countryCode: '+91', phone: '', password: '', confirmPassword: ''
     });
 
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+    const validateForm = () => {
+        const errors = [];
+        const { firstName, lastName, username, email, phone, password } = form;
+
+        if (firstName.trim().length < 2) errors.push('First name must be at least 2 characters');
+        if (lastName.trim().length < 2) errors.push('Last name must be at least 2 characters');
+        if (!/^[a-zA-Z0-9]{3,}$/.test(username)) errors.push('Username must be at least 3 alphanumeric characters');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Please enter a valid email address');
+        if (phone && !/^[6-9]\d{9}$/.test(phone)) errors.push('Please enter a valid 10-digit Indian phone number');
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            errors.push('Password: 8+ chars with Uppercase, Lowercase, Number, and Special character');
+        }
+
+        if (password !== form.confirmPassword) errors.push('Passwords do not match');
+
+        return errors;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (form.password !== form.confirmPassword) {
-            toast.error('Passwords do not match');
+        const validationErrors = validateForm();
+        if (validationErrors.length > 0) {
+            validationErrors.forEach(err => toast.error(err));
             return;
         }
 

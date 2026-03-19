@@ -12,6 +12,13 @@ const ForgotPassword = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Basic Email Regex
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            toast.error('Please enter a valid email address');
+            return;
+        }
+
         setLoading(true);
         try {
             await api.post('/auth/forgot-password', { email });

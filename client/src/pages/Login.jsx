@@ -14,6 +14,12 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (form.username.length < 3) {
+            toast.error('Username/Email must be at least 3 characters');
+            return;
+        }
+
         setLoading(true);
         try {
             const userData = await login(form.username, form.password);
