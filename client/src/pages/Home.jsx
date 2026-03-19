@@ -91,7 +91,9 @@ const Home = () => {
                         <div className="stat-card animate-fade-in-up">
                             <div className="stat-icon stat-icon-green"><TrendingUp size={22} /></div>
                             <div className="stat-value"><AnimatedCounter end={98} suffix="%" /></div>
+                            {/* <div>-</div> */}
                             <div className="stat-label">Accuracy Rate</div>
+                            
                         </div>
                         <div className="stat-card animate-fade-in-up">
                             <div className="stat-icon stat-icon-purple"><FileSearch size={22} /></div>

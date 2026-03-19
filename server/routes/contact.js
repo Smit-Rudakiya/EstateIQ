@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
+const ContactMessage = require('../models/ContactMessage');
 
 // @route   POST /api/contact
 router.post('/', [
@@ -15,8 +16,16 @@ router.post('/', [
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // In production, save to DB or send email. For demo, just log and confirm.
-        console.log('Contact form submission:', req.body);
+        const { name, email, subject, message, phone, propertyId } = req.body;
+
+        await ContactMessage.create({
+            name,
+            email,
+            subject,
+            message,
+            phone: phone || undefined,
+            propertyId: propertyId || undefined
+        });
 
         res.json({ message: 'Thank you for your message! We will get back to you soon.' });
     } catch (error) {

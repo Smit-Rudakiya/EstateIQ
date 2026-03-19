@@ -16,9 +16,13 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            await login(form.username, form.password);
+            const userData = await login(form.username, form.password);
             toast.success('Welcome back!');
-            navigate('/dashboard');
+            if (userData.role === 'admin') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             toast.error(err.response?.data?.message || 'Login failed');
         } finally {
@@ -72,9 +76,9 @@ const Login = () => {
                 <div className="auth-footer">
                     <p>Don't have an account? <Link to="/register" className="auth-link">Sign Up</Link></p>
                 </div>
-                <div className="auth-demo-hint">
+                {/* <div className="auth-demo-hint">
                     <p>Demo: <strong>demo</strong> / <strong>demo123</strong></p>
-                </div>
+                </div> */}
             </div>
         </div>
     );

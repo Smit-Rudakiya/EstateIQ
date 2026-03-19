@@ -89,7 +89,7 @@ const Marketplace = () => {
                         <div className="filter-grid">
                             <div className="form-group">
                                 <label className="form-label">City</label>
-                                <input className="form-input" placeholder="e.g. Miami" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} />
+                                <input className="form-input" placeholder="e.g. Goa" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Property Type</label>
@@ -105,7 +105,7 @@ const Marketplace = () => {
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Min Price</label>
-                                <input type="number" className="form-input" placeholder="$0" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} />
+                                <input type="number" className="form-input" placeholder="₹0" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Max Price</label>

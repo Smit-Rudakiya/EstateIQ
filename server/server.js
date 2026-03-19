@@ -24,6 +24,7 @@ app.use('/api/properties', require('./routes/properties'));
 app.use('/api/documents', require('./routes/documents'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/contact', require('./routes/contact'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Health check
 app.get('/api/health', (req, res) => {

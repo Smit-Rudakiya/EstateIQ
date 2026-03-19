@@ -1,8 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
+import AdminLayout from './components/Admin/AdminLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -15,6 +16,12 @@ import DocumentUpload from './pages/DocumentUpload';
 import Profile from './pages/Profile';
 import MyListings from './pages/MyListings';
 import PropertyDetail from './pages/PropertyDetail';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProperties from './pages/admin/AdminProperties';
+import AdminContacts from './pages/admin/AdminContacts';
+import AdminDocuments from './pages/admin/AdminDocuments';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -26,14 +33,21 @@ const ProtectedRoute = ({ children }) => {
 const GuestRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="page-loader">Loading...</div>;
-  return user ? <Navigate to="/dashboard" /> : children;
+  if (user) {
+    return user.role === 'admin' ? <Navigate to="/admin/dashboard" /> : <Navigate to="/dashboard" />;
+  }
+  return children;
 };
 
 function AppRoutes() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <>
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       <Routes>
+        {/* Public & User Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
@@ -46,9 +60,21 @@ function AppRoutes() {
         <Route path="/documents/upload" element={<ProtectedRoute><DocumentUpload /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/my-listings" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
+
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="properties" element={<AdminProperties />} />
+          <Route path="contacts" element={<AdminContacts />} />
+          <Route path="documents" element={<AdminDocuments />} />
+          <Route path="audit-logs" element={<AdminAuditLogs />} />
+        </Route>
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </>
   );
 }

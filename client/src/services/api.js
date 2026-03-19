@@ -20,7 +20,8 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             localStorage.removeItem('estateiq_token');
             delete api.defaults.headers.common['Authorization'];
-            if (window.location.pathname !== '/login') {
+            const path = window.location.pathname;
+            if (path !== '/login') {
                 window.location.href = '/login';
             }
         }
