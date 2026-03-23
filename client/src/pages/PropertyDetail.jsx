@@ -53,17 +53,17 @@ const PropertyDetail = () => {
         e.preventDefault();
         setSendingInquiry(true);
         try {
-            // Send via contact route
-            await api.post('/contact', {
+            await api.post('/inquiries', {
+                propertyId: property._id,
                 name: inquiryForm.name,
                 email: inquiryForm.email,
-                subject: `Property Inquiry: ${property.title}`,
-                message: `${inquiryForm.message}\n\n---\nProperty: ${property.title}\nLocation: ${property.location.city}, ${property.location.state}\nPrice: ${formatINR(property.price, property.type)}\nPhone: ${inquiryForm.phone || 'Not provided'}`
+                phone: inquiryForm.phone || undefined,
+                message: inquiryForm.message
             });
             setInquirySent(true);
             toast.success('Inquiry sent to property owner!');
         } catch (err) {
-            toast.error(err.response?.data?.errors?.[0]?.msg || 'Failed to send inquiry');
+            toast.error(err.response?.data?.errors?.[0]?.msg || err.response?.data?.message || 'Failed to send inquiry');
         } finally {
             setSendingInquiry(false);
         }

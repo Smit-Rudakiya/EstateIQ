@@ -26,6 +26,19 @@ const seedData = async () => {
 
         console.log('Demo user created: username=demo, password=demo123');
 
+        // Create admin user
+        await User.create({
+            firstName: 'Admin',
+            lastName: 'EstateIQ',
+            username: 'admin',
+            email: 'admin@estateiq.com',
+            phone: '+91 99999 00000',
+            password: 'Admin@123',
+            role: 'admin'
+        });
+
+        console.log('Admin user created: username=admin, password=Admin@123');
+
         // Create demo properties (India)
         const properties = await Property.insertMany([
             {

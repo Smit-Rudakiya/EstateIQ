@@ -22,6 +22,7 @@ import AdminProperties from './pages/admin/AdminProperties';
 import AdminContacts from './pages/admin/AdminContacts';
 import AdminDocuments from './pages/admin/AdminDocuments';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+import AdminInquiries from './pages/admin/AdminInquiries';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -67,6 +68,7 @@ function AppRoutes() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="properties" element={<AdminProperties />} />
+          <Route path="inquiries" element={<AdminInquiries />} />
           <Route path="contacts" element={<AdminContacts />} />
           <Route path="documents" element={<AdminDocuments />} />
           <Route path="audit-logs" element={<AdminAuditLogs />} />

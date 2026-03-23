@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-    LayoutDashboard, Users, Building2, MessageSquare,
+    LayoutDashboard, Users, Building2, MessageSquare, MessageCircle,
     FileText, ClipboardList, LogOut, ChevronLeft, ChevronRight, Building
 } from 'lucide-react';
 
@@ -21,6 +21,7 @@ const AdminSidebar = ({ collapsed, onToggle }) => {
         { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/admin/users', label: 'Users', icon: Users },
         { path: '/admin/properties', label: 'Properties', icon: Building2 },
+        { path: '/admin/inquiries', label: 'Inquiries', icon: MessageCircle },
         { path: '/admin/contacts', label: 'Contacts', icon: MessageSquare },
         { path: '/admin/documents', label: 'Documents', icon: FileText },
         { path: '/admin/audit-logs', label: 'Audit Logs', icon: ClipboardList },
