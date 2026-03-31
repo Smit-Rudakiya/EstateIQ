@@ -119,7 +119,7 @@ const Register = () => {
                     <div className="form-group">
                         <label className="form-label">Password</label>
                         <div className="input-with-icon">
-                            <input type={showPass ? 'text' : 'password'} name="password" className="form-input" placeholder="Min 6 characters" value={form.password} onChange={handleChange} required minLength={6} />
+                            <input type={showPass ? 'text' : 'password'} name="password" className="form-input" placeholder="Min 8 characters" value={form.password} onChange={handleChange} required minLength={6} />
                             <button type="button" className="input-icon-btn" onClick={() => setShowPass(!showPass)}>
                                 {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>

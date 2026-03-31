@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Trash2, Download, ChevronLeft, ChevronRight, FileText, File, FileImage } from 'lucide-react';
+import { Search, Trash2, Download, ChevronLeft, ChevronRight, FileText, File, FileImage, Brain, Eye, X } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,7 @@ const AdminDocuments = () => {
     const [selectedIds, setSelectedIds] = useState([]);
     const [deleteModal, setDeleteModal] = useState(null);
     const [isBulkDelete, setIsBulkDelete] = useState(false);
+    const [analysisModal, setAnalysisModal] = useState(null);
 
     useEffect(() => {
         fetchDocuments();
@@ -85,6 +86,18 @@ const AdminDocuments = () => {
         if (type?.includes('pdf')) return 'linear-gradient(135deg, #EF4444 0%, #991B1B 100%)';
         if (type?.includes('image')) return 'linear-gradient(135deg, #8B5CF6 0%, #5B21B6 100%)';
         return 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)';
+    };
+
+    const getStatusBadge = (status) => {
+        const map = {
+            uploaded: { cls: 'badge-primary', label: 'Uploaded' },
+            analyzing: { cls: 'badge-warning', label: 'Analyzing...' },
+            analyzed: { cls: 'badge-success', label: 'Analyzed' },
+            failed: { cls: 'badge-danger', label: 'Failed' },
+            pending: { cls: 'badge-warning', label: 'Pending' },
+        };
+        const info = map[status] || map.uploaded;
+        return <span className={`badge ${info.cls}`}>{info.label}</span>;
     };
 
     return (
@@ -175,16 +188,21 @@ const AdminDocuments = () => {
                                         </td>
                                         <td>{d.property?.title || '—'}</td>
                                         <td>{formatSize(d.fileSize)}</td>
-                                        <td>
-                                            <span className={`badge ${d.status === 'uploaded' ? 'badge-success' : 'badge-warning'}`}>
-                                                {d.status}
-                                            </span>
-                                        </td>
+                                        <td>{getStatusBadge(d.status)}</td>
                                         <td>{formatDate(d.createdAt)}</td>
                                         <td>
                                             <div className="table-actions">
+                                                {d.status === 'analyzed' && (
+                                                    <button
+                                                        className="table-action-btn"
+                                                        title="View Analysis"
+                                                        onClick={() => setAnalysisModal(d)}
+                                                    >
+                                                        <Brain size={16} />
+                                                    </button>
+                                                )}
                                                 <a
-                                                    href={`http://localhost:5000/uploads/${d.fileName}`}
+                                                    href={`${import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:5000'}/uploads/${d.fileName}`}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="table-action-btn"
@@ -249,6 +267,47 @@ const AdminDocuments = () => {
                             <button className="btn btn-outline btn-sm" onClick={() => setIsBulkDelete(false)}>Cancel</button>
                             <button className="btn btn-danger btn-sm" onClick={handleDelete}>Delete All</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Analysis Preview Modal */}
+            {analysisModal && (
+                <div className="modal-overlay" onClick={() => setAnalysisModal(null)}>
+                    <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}><Brain size={20} /> AI Analysis</h3>
+                            <button onClick={() => setAnalysisModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--dark)', zIndex: 10 }}><X size={20} /></button>
+                        </div>
+                        <p style={{ fontSize: '13px', color: 'var(--text-light)', marginBottom: '16px' }}>{analysisModal.originalName}</p>
+
+                        {analysisModal.analysis?.summary && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <h4 style={{ fontSize: '14px', marginBottom: '8px' }}>Summary</h4>
+                                <p style={{ fontSize: '13px', lineHeight: 1.7, color: 'var(--dark)' }}>{analysisModal.analysis.summary}</p>
+                            </div>
+                        )}
+
+                        {analysisModal.analysis?.alerts?.length > 0 && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <h4 style={{ fontSize: '14px', marginBottom: '8px', color: '#D97706' }}>⚠️ Alerts ({analysisModal.analysis.alerts.length})</h4>
+                                {analysisModal.analysis.alerts.map((a, i) => (
+                                    <p key={i} style={{ fontSize: '13px', padding: '8px 12px', background: '#FEF3C7', borderRadius: '8px', marginBottom: '6px' }}>{a.message}</p>
+                                ))}
+                            </div>
+                        )}
+
+                        {analysisModal.analysis?.clauses?.length > 0 && (
+                            <div>
+                                <h4 style={{ fontSize: '14px', marginBottom: '8px', color: '#7C3AED' }}>📋 Clauses ({analysisModal.analysis.clauses.length})</h4>
+                                {analysisModal.analysis.clauses.map((c, i) => (
+                                    <div key={i} style={{ padding: '10px 12px', background: 'var(--bg)', borderRadius: '8px', borderLeft: '3px solid #8B5CF6', marginBottom: '8px' }}>
+                                        <strong style={{ fontSize: '12px', color: '#7C3AED' }}>{c.label}</strong>
+                                        <p style={{ fontSize: '12px', marginTop: '4px', color: 'var(--text-muted)', fontStyle: 'italic' }}>{c.snippet}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

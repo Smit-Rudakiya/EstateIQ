@@ -32,11 +32,33 @@ const documentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['uploaded', 'pending'],
+        enum: ['uploaded', 'analyzing', 'analyzed', 'failed', 'pending'],
         default: 'uploaded'
+    },
+    // NLP Analysis Results
+    extractedText: {
+        type: String,
+        default: null
+    },
+    analysis: {
+        summary: { type: String, default: null },
+        entities: { type: mongoose.Schema.Types.Mixed, default: {} },
+        alerts: [{ type: { type: String }, message: String }],
+        clauses: [{ label: String, snippet: String }],
+        wordCount: { type: Number, default: 0 },
+        charCount: { type: Number, default: 0 }
+    },
+    analyzedAt: {
+        type: Date,
+        default: null
+    },
+    analysisError: {
+        type: String,
+        default: null
     }
 }, {
     timestamps: true
 });
 
 module.exports = mongoose.model('Document', documentSchema);
+

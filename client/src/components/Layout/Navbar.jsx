@@ -35,13 +35,16 @@ const Navbar = () => {
     const navLinks = [
         { path: '/', label: 'Home', icon: Home },
         { path: '/marketplace', label: 'Marketplace', icon: Building2 },
-        { path: '/about', label: 'About', icon: FileText },
-        { path: '/contact', label: 'Contact', icon: FileText },
     ];
 
     const authLinks = [
         { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/documents/upload', label: 'Upload', icon: Upload },
+    ];
+
+    const endLinks = [
+        { path: '/about', label: 'About', icon: FileText },
+        { path: '/contact', label: 'Contact', icon: FileText },
     ];
 
     return (
@@ -64,6 +67,17 @@ const Navbar = () => {
                         </li>
                     ))}
                     {user && authLinks.map(({ path, label }) => (
+                        <li key={path}>
+                            <Link
+                                to={path}
+                                className={`nav-link ${isActive(path) ? 'active' : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                {label}
+                            </Link>
+                        </li>
+                    ))}
+                    {endLinks.map(({ path, label }) => (
                         <li key={path}>
                             <Link
                                 to={path}
@@ -98,6 +112,9 @@ const Navbar = () => {
                                     </Link>
                                     <Link to="/my-listings" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
                                         <Building2 size={16} /> My Listings
+                                    </Link>
+                                    <Link to="/inquiries/sent" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                                        <FileText size={16} /> Sent Inquiries
                                     </Link>
                                     <hr className="dropdown-divider" />
                                     <button className="dropdown-item logout" onClick={handleLogout}>

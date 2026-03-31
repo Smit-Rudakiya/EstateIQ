@@ -53,6 +53,7 @@ const inquirySchema = new mongoose.Schema({
 
 // Index for fast owner lookups
 inquirySchema.index({ owner: 1, createdAt: -1 });
+inquirySchema.index({ sender: 1, createdAt: -1 });
 inquirySchema.index({ property: 1 });
 
 module.exports = mongoose.model('Inquiry', inquirySchema);

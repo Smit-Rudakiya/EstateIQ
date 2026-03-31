@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Building2, FileText, Upload, MessageCircle, TrendingUp, Clock, CheckCircle, Eye, Send, X, Reply } from 'lucide-react';
+import { LayoutDashboard, Building2, FileText, Upload, MessageCircle, Brain, Clock, CheckCircle, Eye, Send, X, Reply } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './Dashboard.css';
@@ -12,6 +12,7 @@ const Dashboard = () => {
     const [recentDocs, setRecentDocs] = useState([]);
     const [recentProps, setRecentProps] = useState([]);
     const [inquiries, setInquiries] = useState([]);
+    const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [replyModal, setReplyModal] = useState(null);
     const [replyText, setReplyText] = useState('');
@@ -27,6 +28,7 @@ const Dashboard = () => {
                 ]);
                 setRecentProps(propsRes.data.slice(0, 5));
                 setRecentDocs(docsRes.data.slice(0, 5));
+                setDocuments(docsRes.data);
                 setInquiries(inquiriesRes.data.inquiries || []);
                 setStats({
                     properties: propsRes.data.length,
@@ -104,6 +106,7 @@ const Dashboard = () => {
                     </div>
                     <div className="dash-header-actions">
                         <Link to="/documents/upload" className="btn btn-primary btn-sm"><Upload size={16} /> Upload Doc</Link>
+                        <Link to="/inquiries/sent" className="btn btn-outline btn-sm"><MessageCircle size={16} /> Sent Inquiries</Link>
                         <Link to="/my-listings" className="btn btn-outline btn-sm"><Building2 size={16} /> My Listings</Link>
                     </div>
                 </div>
@@ -135,10 +138,10 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div className="dash-stat-card animate-fade-in-up hover-lift">
-                        <div className="dash-stat-icon" style={{ background: '#EDE9FE' }}><TrendingUp size={22} color="#7C3AED" /></div>
+                        <div className="dash-stat-icon" style={{ background: '#EDE9FE' }}><Brain size={22} color="#7C3AED" /></div>
                         <div>
-                            <div className="dash-stat-value">—</div>
-                            <div className="dash-stat-label">Analytics</div>
+                            <div className="dash-stat-value">{documents.filter(d => d.status === 'analyzed').length}</div>
+                            <div className="dash-stat-label">Analyzed Docs</div>
                         </div>
                     </div>
                 </div>
@@ -213,7 +216,7 @@ const Dashboard = () => {
                         <div className="dash-section animate-fade-in-up" style={{ marginBottom: '24px' }}>
                             <div className="dash-section-header">
                                 <h3><FileText size={18} /> Recent Documents</h3>
-                                <Link to="/documents/upload" className="auth-link">View All →</Link>
+                                <Link to="/my-documents" className="auth-link">View All →</Link>
                             </div>
                             {loading ? (
                                 <div className="dash-loading">Loading...</div>
@@ -225,14 +228,14 @@ const Dashboard = () => {
                             ) : (
                                 <div className="dash-list">
                                     {recentDocs.map(doc => (
-                                        <div key={doc._id} className="dash-list-item">
+                                        <Link to={`/documents/${doc._id}`} key={doc._id} className="dash-list-item">
                                             <div className="dash-list-icon"><FileText size={18} /></div>
                                             <div className="dash-list-info">
                                                 <div className="dash-list-title">{doc.originalName}</div>
                                                 <div className="dash-list-meta"><Clock size={12} /> {formatDate(doc.createdAt)} · {formatSize(doc.fileSize)}</div>
                                             </div>
-                                            <span className="badge badge-primary">{doc.status}</span>
-                                        </div>
+                                            <span className={`badge ${doc.status === 'analyzed' ? 'badge-success' : doc.status === 'analyzing' ? 'badge-warning' : doc.status === 'failed' ? 'badge-danger' : 'badge-primary'}`}>{doc.status}</span>
+                                        </Link>
                                     ))}
                                 </div>
                             )}

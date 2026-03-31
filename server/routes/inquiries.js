@@ -57,6 +57,28 @@ router.post('/', [
     }
 });
 
+// @route   GET /api/inquiries/sent
+// @desc    Get all inquiries sent by the logged-in user
+router.get('/sent', auth, async (req, res) => {
+    try {
+        const { status, page = 1, limit = 20 } = req.query;
+        let query = { sender: req.user._id };
+        if (status) query.status = status;
+
+        const total = await Inquiry.countDocuments(query);
+        const inquiries = await Inquiry.find(query)
+            .populate('property', 'title location type price images')
+            .populate('owner', 'firstName lastName')
+            .sort({ createdAt: -1 })
+            .skip((Number(page) - 1) * Number(limit))
+            .limit(Number(limit));
+
+        res.json({ inquiries, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 // @route   GET /api/inquiries/received
 // @desc    Get all inquiries received for the logged-in user's properties
 router.get('/received', auth, async (req, res) => {

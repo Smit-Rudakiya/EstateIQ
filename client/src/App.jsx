@@ -13,9 +13,12 @@ import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Dashboard from './pages/Dashboard';
 import DocumentUpload from './pages/DocumentUpload';
+import DocumentDetail from './pages/DocumentDetail';
+import MyDocuments from './pages/MyDocuments';
 import Profile from './pages/Profile';
 import MyListings from './pages/MyListings';
 import PropertyDetail from './pages/PropertyDetail';
+import SentInquiries from './pages/SentInquiries';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProperties from './pages/admin/AdminProperties';
@@ -58,7 +61,10 @@ function AppRoutes() {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/properties/:id" element={<PropertyDetail />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/inquiries/sent" element={<ProtectedRoute><SentInquiries /></ProtectedRoute>} />
         <Route path="/documents/upload" element={<ProtectedRoute><DocumentUpload /></ProtectedRoute>} />
+        <Route path="/documents/:id" element={<ProtectedRoute><DocumentDetail /></ProtectedRoute>} />
+        <Route path="/my-documents" element={<ProtectedRoute><MyDocuments /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/my-listings" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
 
