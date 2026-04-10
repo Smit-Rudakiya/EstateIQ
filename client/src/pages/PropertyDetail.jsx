@@ -223,7 +223,7 @@ const PropertyDetail = () => {
                                                 className="form-input"
                                                 placeholder="Rahul Sharma"
                                                 value={inquiryForm.name}
-                                                onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value })}
+                                                onChange={(e) => setInquiryForm({ ...inquiryForm, name: e.target.value.replace(/[0-9]/g, '') })}
                                                 required
                                             />
                                         </div>

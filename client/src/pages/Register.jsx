@@ -6,8 +6,10 @@ import toast from 'react-hot-toast';
 import './Auth.css';
 
 const Register = () => {
-    const { register } = useAuth();
+    const { register, verifyOTP } = useAuth();
     const navigate = useNavigate();
+    const [step, setStep] = useState(1);
+    const [otp, setOtp] = useState('');
     const [showPass, setShowPass] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -17,7 +19,10 @@ const Register = () => {
     });
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        let { name, value } = e.target;
+        if (name === 'firstName' || name === 'lastName') {
+            value = value.replace(/[0-9]/g, '');
+        }
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
@@ -61,11 +66,25 @@ const Register = () => {
                 password: form.password
             };
             await register(payload);
-            toast.success('Account created successfully!');
-            navigate('/dashboard');
+            toast.success('Registration successful! Please check your email for the OTP.');
+            setStep(2);
         } catch (err) {
             const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Registration failed';
             toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOTPSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await verifyOTP(form.email, otp);
+            toast.success('Account verified successfully!');
+            navigate('/dashboard');
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Invalid OTP');
         } finally {
             setLoading(false);
         }
@@ -79,6 +98,7 @@ const Register = () => {
                     <h1>Create Account</h1>
                     <p>Join EstateIQ for intelligent property management</p>
                 </div>
+                {step === 1 && (
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-row">
                         <div className="form-group">
@@ -141,6 +161,32 @@ const Register = () => {
                         <UserPlus size={18} /> {loading ? 'Creating Account...' : 'Sign Up'}
                     </button>
                 </form>
+                )}
+
+                {step === 2 && (
+                <form onSubmit={handleOTPSubmit} className="auth-form animate-fade-in">
+                    <div className="form-group">
+                        <label className="form-label">Enter 6-digit OTP</label>
+                        <p style={{fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px'}}>
+                            We've sent a verification code to <strong>{form.email}</strong>
+                        </p>
+                        <input 
+                            type="text" 
+                            className="form-input" 
+                            placeholder="123456" 
+                            value={otp} 
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            required 
+                            minLength={6}
+                            maxLength={6}
+                            style={{ letterSpacing: '4px', textAlign: 'center', fontSize: '20px' }}
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-lg auth-submit" disabled={loading || otp.length < 6}>
+                        {loading ? 'Verifying...' : 'Verify OTP & Login'}
+                    </button>
+                </form>
+                )}
                 <div className="auth-footer">
                     <p>Already have an account? <Link to="/login" className="auth-link">Log In</Link></p>
                 </div>

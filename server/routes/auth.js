@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const { sendResetEmail, sendWelcomeEmail } = require('../utils/mailService');
+const { sendResetEmail, sendWelcomeEmail, sendOTPEmail } = require('../utils/mailService');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -44,12 +44,60 @@ router.post('/register', [
             });
         }
 
-        const user = await User.create({ firstName, lastName, username, email, password, phone });
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Send welcome email (non-blocking)
-        sendWelcomeEmail(user).catch(err => console.error('Welcome email failed:', err));
+        const user = await User.create({ 
+            firstName, lastName, username, email, password, phone,
+            otp, otpExpires, isVerified: false
+        });
+
+        // Send OTP email (non-blocking)
+        sendOTPEmail(user.email, otp).catch(err => console.error('OTP email failed:', err));
 
         res.status(201).json({
+            message: 'Registration successful! Please check your email for the OTP to verify your account.',
+            email: user.email
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
+// @route   POST /api/auth/verify-otp
+router.post('/verify-otp', [
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('otp').trim().isLength({ min: 6, max: 6 }).withMessage('Valid OTP is required')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { email, otp } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.isVerified) {
+            return res.status(400).json({ message: 'User is already verified' });
+        }
+
+        if (user.otp !== otp || user.otpExpires < new Date()) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        user.isVerified = true;
+        user.otp = null;
+        user.otpExpires = null;
+        await user.save();
+
+        sendWelcomeEmail(user).catch(err => console.error('Welcome email failed:', err));
+
+        res.json({
             _id: user._id,
             firstName: user.firstName,
             lastName: user.lastName,
@@ -85,6 +133,10 @@ router.post('/login', [
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        if (!user.isVerified) {
+            return res.status(401).json({ message: 'Account not verified. Please check your email for the OTP.' });
         }
 
         res.json({

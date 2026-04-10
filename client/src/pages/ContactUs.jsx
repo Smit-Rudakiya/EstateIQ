@@ -37,7 +37,7 @@ const ContactUs = () => {
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">Name</label>
-                                <input className="form-input" placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                                <input className="form-input" placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[0-9]/g, '') })} required />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Email</label>

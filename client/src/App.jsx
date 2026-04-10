@@ -58,7 +58,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/contact" element={<ProtectedRoute><ContactUs /></ProtectedRoute>} />
         <Route path="/properties/:id" element={<PropertyDetail />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/inquiries/sent" element={<ProtectedRoute><SentInquiries /></ProtectedRoute>} />

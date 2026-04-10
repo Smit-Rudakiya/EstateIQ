@@ -82,11 +82,11 @@ const Profile = () => {
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">First Name</label>
-                                <input className="form-input" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+                                <input className="form-input" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value.replace(/[0-9]/g, '') })} />
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Last Name</label>
-                                <input className="form-input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+                                <input className="form-input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value.replace(/[0-9]/g, '') })} />
                             </div>
                         </div>
                         <div className="form-group">

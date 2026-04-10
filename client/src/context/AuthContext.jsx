@@ -41,6 +41,11 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         const res = await api.post('/auth/register', userData);
+        return res.data;
+    };
+
+    const verifyOTP = async (email, otp) => {
+        const res = await api.post('/auth/verify-otp', { email, otp });
         localStorage.setItem('estateiq_token', res.data.token);
         api.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
         setUser(res.data);
@@ -54,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout, setUser }}>
+        <AuthContext.Provider value={{ user, loading, login, register, verifyOTP, logout, setUser }}>
             {children}
         </AuthContext.Provider>
     );

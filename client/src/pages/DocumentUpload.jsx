@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import './DocumentUpload.css';
@@ -9,6 +10,8 @@ const DocumentUpload = () => {
     const [uploading, setUploading] = useState(false);
     const [uploaded, setUploaded] = useState([]);
     const [dragActive, setDragActive] = useState(false);
+    const navigate = useNavigate();
+    const [setShow] = useState(false);
 
     const handleDrag = useCallback((e) => {
         e.preventDefault();
@@ -38,6 +41,7 @@ const DocumentUpload = () => {
     };
 
     const handleUpload = async () => {
+
         if (files.length === 0) return toast.error('Please select files to upload');
         setUploading(true);
 
@@ -57,6 +61,12 @@ const DocumentUpload = () => {
         setFiles([]);
         setUploading(false);
         toast.success('Upload complete!');
+
+        setTimeout(() => {
+            setShow(true);
+            navigate('/Dashboard');
+        }, 1000);
+        navigate('/Dashboard');
     };
 
     const formatSize = (bytes) => {
@@ -102,7 +112,7 @@ const DocumentUpload = () => {
                                 <button className="file-item-remove" onClick={() => removeFile(i)}><X size={16} /></button>
                             </div>
                         ))}
-                        <button className="btn btn-primary btn-lg" onClick={handleUpload} disabled={uploading} style={{ width: '100%', marginTop: '16px' }}>
+                        <button className="btn btn-primary btn-lg" onClick={handleUpload} disabled={uploading} style={{ width: '100%', marginTop: '16px' }} >
                             <Upload size={18} /> {uploading ? 'Uploading...' : `Upload ${files.length} File${files.length > 1 ? 's' : ''}`}
                         </button>
                     </div>

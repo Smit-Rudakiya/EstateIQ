@@ -3,8 +3,10 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const ContactMessage = require('../models/ContactMessage');
 
+const auth = require('../middleware/auth');
+
 // @route   POST /api/contact
-router.post('/', [
+router.post('/', auth, [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Valid email is required'),
     body('subject').trim().notEmpty().withMessage('Subject is required'),
